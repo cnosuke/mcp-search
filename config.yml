@@ -1,7 +1,6 @@
 search:
-  api_key: "your-brave-search-api-key"
   timeout: 30
   max_retries: 2
   default_country: JP
-  default_language: jp
+  default_search_lang: jp
   default_ui_lang: ja-JP

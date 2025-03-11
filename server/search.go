@@ -5,17 +5,18 @@ import (
 
 	bravesearch "github.com/cnosuke/go-brave-search"
 	"github.com/cnosuke/mcp-search/config"
+	"github.com/cnosuke/mcp-search/server/tools"
 	"github.com/cockroachdb/errors"
 	"go.uber.org/zap"
 )
 
 // SearchServer - Search server structure
 type SearchServer struct {
-	client             *bravesearch.Client
-	cfg                *config.Config
-	DefaultCountry     string
-	DefaultSearchLang  string
-	DefaultUILang      string
+	client            *bravesearch.Client
+	cfg               *config.Config
+	DefaultCountry    string
+	DefaultSearchLang string
+	DefaultUILang     string
 }
 
 // NewSearchServer - Create a new Search server
@@ -39,16 +40,16 @@ func NewSearchServer(cfg *config.Config) (*SearchServer, error) {
 	}
 
 	return &SearchServer{
-		client:             client,
-		cfg:                cfg,
-		DefaultCountry:     cfg.Search.DefaultCountry,
-		DefaultSearchLang:  cfg.Search.DefaultSearchLang,
-		DefaultUILang:      cfg.Search.DefaultUILang,
+		client:            client,
+		cfg:               cfg,
+		DefaultCountry:    cfg.Search.DefaultCountry,
+		DefaultSearchLang: cfg.Search.DefaultSearchLang,
+		DefaultUILang:     cfg.Search.DefaultUILang,
 	}, nil
 }
 
 // ExecuteSearch - Execute a web search
-func (s *SearchServer) ExecuteSearch(query string, params *bravesearch.WebSearchParams) (*bravesearch.WebSearchResponse, error) {
+func (s *SearchServer) ExecuteSearch(query string, params *bravesearch.WebSearchParams) (*tools.ResultList, error) {
 	ctx := context.Background()
 
 	// Prepare search parameters
@@ -79,5 +80,22 @@ func (s *SearchServer) ExecuteSearch(query string, params *bravesearch.WebSearch
 		"query", query,
 		"result_count", len(results.GetWebResults()))
 
-	return results, nil
+	return convertResult(results), nil
+}
+
+func convertResult(result *bravesearch.WebSearchResponse) *tools.ResultList {
+	var results []tools.WebResult
+	for _, r := range result.Web.Results {
+		results = append(results, tools.WebResult{
+			Title:          r.Title,
+			URL:            r.URL,
+			Description:    r.Description,
+			PageAge:        r.PageAge,
+			Language:       r.Language,
+			FamilyFriendly: r.FamilyFriendly,
+		})
+	}
+	return &tools.ResultList{
+		Results: results,
+	}
 }

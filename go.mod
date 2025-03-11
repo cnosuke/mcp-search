@@ -3,8 +3,8 @@ module github.com/cnosuke/mcp-search
 go 1.24.0
 
 require (
-	github.com/cnosuke/go-brave-search v0.0.0-20250310110000-000000000000
-	github.com/cockroachdb/errors v1.11.1
+	github.com/cnosuke/go-brave-search v0.0.0-20250311055738-a81f5396f6e4
+	github.com/cockroachdb/errors v1.11.3
 	github.com/jinzhu/configor v1.2.2
 	github.com/metoro-io/mcp-golang v0.8.0
 	github.com/urfave/cli/v2 v2.27.1
@@ -18,7 +18,7 @@ require (
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/getsentry/sentry-go v0.18.0 // indirect
+	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/invopop/jsonschema v0.12.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -34,9 +34,7 @@ require (
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/cnosuke/go-brave-search => ../go-brave-search

@@ -17,11 +17,6 @@ func InitLogger(debug bool, noLogs bool, logPath string) error {
 		config = zap.NewProductionConfig()
 	}
 
-	// when noLogs is true, only fatal logs are output
-	if noLogs {
-		config.Level = zap.NewAtomicLevelAt(zapcore.FatalLevel)
-	}
-
 	if noLogs {
 		if logPath != "" {
 			// noLogs && len(logPath) > 0: output to logPath only
@@ -29,8 +24,7 @@ func InitLogger(debug bool, noLogs bool, logPath string) error {
 			config.ErrorOutputPaths = []string{logPath}
 		} else {
 			// noLogs && len(logPath) == 0: no output
-			config.OutputPaths = []string{}
-			config.ErrorOutputPaths = []string{}
+			config.Level = zap.NewAtomicLevelAt(zapcore.FatalLevel)
 		}
 	} else {
 		if logPath != "" {

@@ -11,15 +11,15 @@ import (
 
 // WebSearchArgs - Arguments for web_search tool
 type WebSearchArgs struct {
-	Query       string `json:"query" jsonschema:"description=Search query"`
-	Count       int    `json:"count,omitempty" jsonschema:"description=Number of results (default: 10, max: 20)"`
-	Offset      int    `json:"offset,omitempty" jsonschema:"description=Pagination offset (default: 0)"`
-	SafeSearch  string `json:"safe_search,omitempty" jsonschema:"description=Safe search mode (off, moderate, strict)"`
-	Freshness   string `json:"freshness,omitempty" jsonschema:"description=Freshness filter (pd: past day, pw: past week, pm: past month, py: past year)"`
-	SpellCheck  bool   `json:"spellcheck,omitempty" jsonschema:"description=Enable spellcheck"`
-	Country     string `json:"country,omitempty" jsonschema:"description=Country code (e.g., US, JP)"`
-	SearchLang  string `json:"search_lang,omitempty" jsonschema:"description=Search language (e.g., en, jp)"`
-	UILang      string `json:"ui_lang,omitempty" jsonschema:"description=UI language (e.g., en-US, ja-JP)"`
+	Query      string `json:"query" jsonschema:"description=Search query"`
+	Count      int    `json:"count,omitempty" jsonschema:"description=Number of results (default: 10, max: 20)"`
+	Offset     int    `json:"offset,omitempty" jsonschema:"description=Pagination offset (default: 0)"`
+	SafeSearch string `json:"safe_search,omitempty" jsonschema:"description=Safe search mode (off, moderate, strict)"`
+	Freshness  string `json:"freshness,omitempty" jsonschema:"description=Freshness filter (pd: past day, pw: past week, pm: past month, py: past year)"`
+	SpellCheck bool   `json:"spellcheck,omitempty" jsonschema:"description=Enable spellcheck"`
+	Country    string `json:"country,omitempty" jsonschema:"description=Country code (e.g., US, JP)"`
+	SearchLang string `json:"search_lang,omitempty" jsonschema:"description=Search language (e.g., en, jp)"`
+	UILang     string `json:"ui_lang,omitempty" jsonschema:"description=UI language (e.g., en-US, ja-JP)"`
 }
 
 // RegisterWebSearchTool - Register the web_search tool
@@ -113,6 +113,7 @@ func RegisterWebSearchTool(server *mcp.Server, searchExecutor SearchExecutor) er
 			if err != nil {
 				zap.S().Errorw("failed to execute search",
 					"query", args.Query,
+					"params", params,
 					"error", err)
 				return nil, errors.Wrap(err, "failed to execute search")
 			}
