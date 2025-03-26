@@ -4,13 +4,13 @@ MCP Search Server is a Go-based MCP server implementation that provides web sear
 
 ## Features
 
-* MCP Compliance: Provides a JSON‐RPC based interface for tool execution according to the MCP specification.
-* Web Search: Supports web search using Brave Search API with various parameters for customization.
+- MCP Compliance: Provides a JSON‐RPC based interface for tool execution according to the MCP specification.
+- Web Search: Supports web search using Brave Search API with various parameters for customization.
 
 ## Requirements
 
-* Go 1.24 or later
-* Brave Search API key
+- Go 1.24 or later
+- Brave Search API key
 
 ## Configuration
 
@@ -21,12 +21,16 @@ log: 'path/to/mcp-search.log' # Log file path, if empty no log will be produced
 debug: false # Enable debug mode for verbose logging
 
 search:
-  api_key: "your-brave-search-api-key"
+  api_key: 'your-brave-search-api-key'
   timeout: 30
   max_retries: 2
+  default_country: JP
+  default_search_lang: jp
+  default_ui_lang: ja-JP
 ```
 
 You can override configurations using environment variables:
+
 - `LOG_PATH`: Path to log file
 - `DEBUG`: Enable debug mode (true/false)
 - `BRAVE_SEARCH_API_KEY`: Your Brave Search API key
@@ -48,21 +52,21 @@ Logging behavior is controlled through configuration:
 
 MCP clients interact with the server by sending JSON‐RPC requests to execute various tools. The following MCP tools are supported:
 
-* `web_search`: Performs a web search using the Brave Search API with configurable parameters.
+- `web_search`: Performs a web search using the Brave Search API with configurable parameters.
 
 ### Tool Parameters
 
 The `web_search` tool accepts the following parameters:
 
-* `query` (required): The search query string.
-* `count` (optional): Number of results to return (default: 10, max: 20).
-* `offset` (optional): Pagination offset for results (default: 0).
-* `safe_search` (optional): Safe search mode ("off", "moderate", "strict").
-* `freshness` (optional): Freshness filter ("pd" for past day, "pw" for past week, "pm" for past month, "py" for past year).
-* `spellcheck` (optional): Enable or disable spellcheck.
-* `country` (optional): Country code for search results (e.g., "US", "JP").
-* `search_lang` (optional): Search language (e.g., "en", "jp").
-* `ui_lang` (optional): UI language (e.g., "en-US", "ja-JP").
+- `query` (required): The search query string.
+- `count` (optional): Number of results to return (default: 10, max: 20).
+- `offset` (optional): Pagination offset for results (default: 0).
+- `safe_search` (optional): Safe search mode ("off", "moderate", "strict").
+- `freshness` (optional): Freshness filter ("pd" for past day, "pw" for past week, "pm" for past month, "py" for past year).
+- `spellcheck` (optional): Enable or disable spellcheck.
+- `country` (optional): Country code for search results (e.g., "US", "JP").
+- `search_lang` (optional): Search language (e.g., "en", "jp").
+- `ui_lang` (optional): UI language (e.g., "en-US", "ja-JP").
 
 ### Using with Claude Desktop
 
@@ -98,7 +102,8 @@ When starting the server, you can specify various settings:
 ```
 
 Options:
-* `--config`, `-c`: Path to the configuration file (default: "config.yml").
+
+- `--config`, `-c`: Path to the configuration file (default: "config.yml").
 
 ## Building and Running
 
