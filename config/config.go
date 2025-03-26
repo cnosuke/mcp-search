@@ -7,6 +7,8 @@ import (
 
 // Config represents the server configuration
 type Config struct {
+	Log    string      `yaml:"log" default:"" env:"LOG_PATH"`
+	Debug  bool        `yaml:"debug" default:"false" env:"DEBUG"`
 	Search SearchConfig `yaml:"search"`
 }
 

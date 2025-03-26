@@ -1,3 +1,6 @@
+log: 'path/to/mcp-search.log'
+debug: false
+
 search:
   timeout: 30
   max_retries: 2
