@@ -2,7 +2,7 @@ package tools
 
 import (
 	bravesearch "github.com/cnosuke/go-brave-search"
-	mcp "github.com/metoro-io/mcp-golang"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 type ResultList struct {
@@ -24,7 +24,7 @@ type SearchExecutor interface {
 }
 
 // RegisterAllTools - Register all tools with the server
-func RegisterAllTools(mcpServer *mcp.Server, searchExecutor SearchExecutor) error {
+func RegisterAllTools(mcpServer *server.MCPServer, searchExecutor SearchExecutor) error {
 	// Register web_search tool
 	if err := RegisterWebSearchTool(mcpServer, searchExecutor); err != nil {
 		return err

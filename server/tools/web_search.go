@@ -1,15 +1,16 @@
 package tools
 
 import (
+	"context"
 	"encoding/json"
 
 	bravesearch "github.com/cnosuke/go-brave-search"
-	"github.com/cockroachdb/errors"
-	mcp "github.com/metoro-io/mcp-golang"
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"go.uber.org/zap"
 )
 
-// WebSearchArgs - Arguments for web_search tool
+// WebSearchArgs - Arguments for web_search tool (保持しておく旧APIの型)
 type WebSearchArgs struct {
 	Query      string `json:"query" jsonschema:"description=Search query"`
 	Count      int    `json:"count,omitempty" jsonschema:"description=Number of results (default: 10, max: 20)"`
@@ -23,115 +24,186 @@ type WebSearchArgs struct {
 }
 
 // RegisterWebSearchTool - Register the web_search tool
-func RegisterWebSearchTool(server *mcp.Server, searchExecutor SearchExecutor) error {
+func RegisterWebSearchTool(mcpServer *server.MCPServer, searchExecutor SearchExecutor) error {
 	zap.S().Debugw("registering web_search tool")
-	err := server.RegisterTool("web_search", "Performs a web search using the Brave Search API. Use this for broad information gathering, recent events, or when you need diverse web sources. Supports pagination, content filtering, and freshness controls. Maximum 20 results per request, with offset for pagination.",
-		func(args WebSearchArgs) (*mcp.ToolResponse, error) {
-			zap.S().Debugw("executing web_search",
-				"query", args.Query,
-				"count", args.Count,
-				"offset", args.Offset,
-				"safe_search", args.SafeSearch,
-				"freshness", args.Freshness,
-				"spellcheck", args.SpellCheck,
-				"country", args.Country,
-				"search_lang", args.SearchLang,
-				"ui_lang", args.UILang)
 
-			// Validate query
-			if args.Query == "" {
-				return nil, errors.New("query is required")
-			}
+	// ツールの定義
+	tool := mcp.NewTool("web_search",
+		mcp.WithDescription("Performs a web search using the Brave Search API. Use this for broad information gathering, recent events, or when you need diverse web sources. Supports pagination, content filtering, and freshness controls. Maximum 20 results per request, with offset for pagination."),
+		mcp.WithString("query",
+			mcp.Description("Search query"),
+			mcp.Required(),
+		),
+		mcp.WithNumber("count",
+			mcp.Description("Number of results (default: 10, max: 20)"),
+		),
+		mcp.WithNumber("offset",
+			mcp.Description("Pagination offset (default: 0)"),
+		),
+		mcp.WithString("safe_search",
+			mcp.Description("Safe search mode (off, moderate, strict)"),
+		),
+		mcp.WithString("freshness",
+			mcp.Description("Freshness filter (pd: past day, pw: past week, pm: past month, py: past year)"),
+		),
+		mcp.WithBoolean("spellcheck",
+			mcp.Description("Enable spellcheck"),
+		),
+		mcp.WithString("country",
+			mcp.Description("Country code (e.g., US, JP)"),
+		),
+		mcp.WithString("search_lang",
+			mcp.Description("Search language (e.g., en, jp)"),
+		),
+		mcp.WithString("ui_lang",
+			mcp.Description("UI language (e.g., en-US, ja-JP)"),
+		),
+	)
 
-			// Set up search parameters
-			params := bravesearch.NewWebSearchParams()
+	// ツールハンドラーの登録
+	mcpServer.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// 引数の取得
+		query, ok := request.Params.Arguments["query"].(string)
+		if !ok || query == "" {
+			return mcp.NewToolResultError("query is required"), nil
+		}
 
-			// Apply user-provided parameters
-			if args.Count > 0 {
-				if args.Count > 20 {
-					params.Count = 20 // Max 20 results per Brave Search API
-				} else {
-					params.Count = args.Count
-				}
+		// その他のパラメータを取得
+		count := 10
+		if countVal, ok := request.Params.Arguments["count"].(float64); ok {
+			count = int(countVal)
+		}
+
+		offset := 0
+		if offsetVal, ok := request.Params.Arguments["offset"].(float64); ok {
+			offset = int(offsetVal)
+		}
+
+		safeSearch := ""
+		if safeSearchVal, ok := request.Params.Arguments["safe_search"].(string); ok {
+			safeSearch = safeSearchVal
+		}
+
+		freshness := ""
+		if freshnessVal, ok := request.Params.Arguments["freshness"].(string); ok {
+			freshness = freshnessVal
+		}
+
+		spellcheck := false
+		if spellcheckVal, ok := request.Params.Arguments["spellcheck"].(bool); ok {
+			spellcheck = spellcheckVal
+		}
+
+		country := ""
+		if countryVal, ok := request.Params.Arguments["country"].(string); ok {
+			country = countryVal
+		}
+
+		searchLang := ""
+		if searchLangVal, ok := request.Params.Arguments["search_lang"].(string); ok {
+			searchLang = searchLangVal
+		}
+
+		uiLang := ""
+		if uiLangVal, ok := request.Params.Arguments["ui_lang"].(string); ok {
+			uiLang = uiLangVal
+		}
+
+		zap.S().Debugw("executing web_search",
+			"query", query,
+			"count", count,
+			"offset", offset,
+			"safe_search", safeSearch,
+			"freshness", freshness,
+			"spellcheck", spellcheck,
+			"country", country,
+			"search_lang", searchLang,
+			"ui_lang", uiLang)
+
+		// Set up search parameters
+		params := bravesearch.NewWebSearchParams()
+
+		// Apply user-provided parameters
+		if count > 0 {
+			if count > 20 {
+				params.Count = 20 // Max 20 results per Brave Search API
 			} else {
-				params.Count = 10 // Default count
+				params.Count = count
 			}
+		} else {
+			params.Count = 10 // Default count
+		}
 
-			if args.Offset >= 0 {
-				params.Offset = args.Offset
+		if offset >= 0 {
+			params.Offset = offset
+		}
+
+		// Apply safe search settings
+		if safeSearch != "" {
+			switch safeSearch {
+			case "off":
+				params.SafeSearch = bravesearch.SafeSearchOff
+			case "moderate":
+				params.SafeSearch = bravesearch.SafeSearchModerate
+			case "strict":
+				params.SafeSearch = bravesearch.SafeSearchStrict
+			default:
+				// Use default (moderate) if invalid
+				params.SafeSearch = bravesearch.SafeSearchModerate
 			}
+		}
 
-			// Apply safe search settings
-			if args.SafeSearch != "" {
-				switch args.SafeSearch {
-				case "off":
-					params.SafeSearch = bravesearch.SafeSearchOff
-				case "moderate":
-					params.SafeSearch = bravesearch.SafeSearchModerate
-				case "strict":
-					params.SafeSearch = bravesearch.SafeSearchStrict
-				default:
-					// Use default (moderate) if invalid
-					params.SafeSearch = bravesearch.SafeSearchModerate
-				}
+		// Apply freshness filter
+		if freshness != "" {
+			switch freshness {
+			case "pd":
+				params.Freshness = bravesearch.FreshnessDay
+			case "pw":
+				params.Freshness = bravesearch.FreshnessWeek
+			case "pm":
+				params.Freshness = bravesearch.FreshnessMonth
+			case "py":
+				params.Freshness = bravesearch.FreshnessYear
+			default:
+				// No default freshness
 			}
+		}
 
-			// Apply freshness filter
-			if args.Freshness != "" {
-				switch args.Freshness {
-				case "pd":
-					params.Freshness = bravesearch.FreshnessDay
-				case "pw":
-					params.Freshness = bravesearch.FreshnessWeek
-				case "pm":
-					params.Freshness = bravesearch.FreshnessMonth
-				case "py":
-					params.Freshness = bravesearch.FreshnessYear
-				default:
-					// No default freshness
-				}
-			}
+		// Apply spellcheck
+		params.Spellcheck = spellcheck
 
-			// Apply spellcheck
-			params.Spellcheck = args.SpellCheck
+		// Apply country, search language, and UI language
+		if country != "" {
+			params.Country = country
+		}
 
-			// Apply country, search language, and UI language
-			if args.Country != "" {
-				params.Country = args.Country
-			}
+		if searchLang != "" {
+			params.SearchLang = searchLang
+		}
 
-			if args.SearchLang != "" {
-				params.SearchLang = args.SearchLang
-			}
+		if uiLang != "" {
+			params.UILang = uiLang
+		}
 
-			if args.UILang != "" {
-				params.UILang = args.UILang
-			}
+		// Execute search
+		results, err := searchExecutor.ExecuteSearch(query, params)
+		if err != nil {
+			zap.S().Errorw("failed to execute search",
+				"query", query,
+				"params", params,
+				"error", err)
+			return mcp.NewToolResultError(err.Error()), nil
+		}
 
-			// Execute search
-			results, err := searchExecutor.ExecuteSearch(args.Query, params)
-			if err != nil {
-				zap.S().Errorw("failed to execute search",
-					"query", args.Query,
-					"params", params,
-					"error", err)
-				return nil, errors.Wrap(err, "failed to execute search")
-			}
+		// Convert search results to JSON
+		jsonContent, err := json.Marshal(results)
+		if err != nil {
+			return mcp.NewToolResultError("failed to marshal search results to JSON"), nil
+		}
 
-			// Convert search results to JSON
-			jsonContent, err := json.Marshal(results)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to marshal search results to JSON")
-			}
-
-			// Return the search results as text content
-			return mcp.NewToolResponse(mcp.NewTextContent(string(jsonContent))), nil
-		})
-
-	if err != nil {
-		zap.S().Errorw("failed to register web_search tool", "error", err)
-		return errors.Wrap(err, "failed to register web_search tool")
-	}
+		// Return the search results as text content
+		return mcp.NewToolResultText(string(jsonContent)), nil
+	})
 
 	return nil
 }
