@@ -9,8 +9,101 @@ MCP Search Server is a Go-based MCP server implementation that provides web sear
 
 ## Requirements
 
-- Go 1.24 or later
+- Docker (recommended)
 - Brave Search API key
+
+For local development:
+
+- Go 1.24 or later
+
+## Using with Docker (Recommended)
+
+The easiest way to use MCP Search Server is with Docker:
+
+```bash
+# Build the Docker image
+make docker-build
+
+# Run the Docker container
+docker run \
+  -v /path/to/your/config.yml:/app/config.yml \
+  -e BRAVE_SEARCH_API_KEY=your-brave-search-api-key \
+  cnosuke/mcp-search:latest
+```
+
+You can also pull the image directly from Docker Hub:
+
+```bash
+docker pull cnosuke/mcp-search:latest
+
+docker run \
+  -v /path/to/your/config.yml:/app/config.yml \
+  -e BRAVE_SEARCH_API_KEY=your-brave-search-api-key \
+  cnosuke/mcp-search:latest
+```
+
+### Using with Claude Desktop (Docker)
+
+To integrate with Claude Desktop using Docker, add an entry to your `claude_desktop_config.json` file:
+
+```json
+{
+  "mcpServers": {
+    "search": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "BRAVE_SEARCH_API_KEY=your-brave-search-api-key",
+        "-e",
+        "BRAVE_SEARCH_COUNTRY=US",
+        "-e",
+        "BRAVE_SEARCH_LANGUAGE=en",
+        "-e",
+        "BRAVE_SEARCH_UI_LANGUAGE=en-US",
+        "cnosuke/mcp-search:latest"
+      ]
+    }
+  }
+}
+```
+
+## Building and Running (Go Binary)
+
+Alternatively, you can build and run the Go binary directly:
+
+```bash
+# Build the server
+make bin/mcp-search
+
+# Run the server
+./bin/mcp-search server --config=config.yml
+```
+
+### Using with Claude Desktop (Go Binary)
+
+To integrate with Claude Desktop using the Go binary, add an entry to your `claude_desktop_config.json` file:
+
+```json
+{
+  "mcpServers": {
+    "search": {
+      "command": "./bin/mcp-search",
+      "args": ["server"],
+      "env": {
+        "LOG_PATH": "mcp-search.log",
+        "DEBUG": "false",
+        "BRAVE_SEARCH_API_KEY": "your-brave-search-api-key",
+        "BRAVE_SEARCH_COUNTRY": "US",
+        "BRAVE_SEARCH_LANGUAGE": "en",
+        "BRAVE_SEARCH_UI_LANGUAGE": "en-US"
+      }
+    }
+  }
+}
+```
 
 ## Configuration
 
@@ -68,31 +161,6 @@ The `web_search` tool accepts the following parameters:
 - `search_lang` (optional): Search language (e.g., "en", "jp").
 - `ui_lang` (optional): UI language (e.g., "en-US", "ja-JP").
 
-### Using with Claude Desktop
-
-To integrate with Claude Desktop, add an entry to your `claude_desktop_config.json` file:
-
-```json
-{
-  "mcpServers": {
-    "search": {
-      "command": "./bin/mcp-search",
-      "args": ["server"],
-      "env": {
-        "LOG_PATH": "mcp-search.log",
-        "DEBUG": "false",
-        "BRAVE_SEARCH_API_KEY": "your-brave-search-api-key",
-        "BRAVE_SEARCH_COUNTRY": "US",
-        "BRAVE_SEARCH_LANGUAGE": "en",
-        "BRAVE_SEARCH_UI_LANGUAGE": "en-US"
-      }
-    }
-  }
-}
-```
-
-This configuration registers the MCP Search Server with Claude Desktop, ensuring that all logs are directed to the specified log file.
-
 ## Command-Line Parameters
 
 When starting the server, you can specify various settings:
@@ -104,19 +172,6 @@ When starting the server, you can specify various settings:
 Options:
 
 - `--config`, `-c`: Path to the configuration file (default: "config.yml").
-
-## Building and Running
-
-```bash
-# Build the server
-make build
-
-# Run the server
-make run
-
-# or run with specific options
-./bin/mcp-search server --config=config.yml
-```
 
 ## Contributing
 

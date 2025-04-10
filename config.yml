@@ -1,4 +1,4 @@
-log: 'path/to/mcp-search.log'
+log: 'mcp-search.log'
 debug: false
 
 search:
