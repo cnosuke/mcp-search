@@ -18,25 +18,11 @@ For local development:
 
 ## Using with Docker (Recommended)
 
-The easiest way to use MCP Search Server is with Docker:
-
-```bash
-# Build the Docker image
-make docker-build
-
-# Run the Docker container
-docker run \
-  -v /path/to/your/config.yml:/app/config.yml \
-  -e BRAVE_SEARCH_API_KEY=your-brave-search-api-key \
-  cnosuke/mcp-search:latest
-```
-
-You can also pull the image directly from Docker Hub:
-
 ```bash
 docker pull cnosuke/mcp-search:latest
 
 docker run \
+  -i \
   -v /path/to/your/config.yml:/app/config.yml \
   -e BRAVE_SEARCH_API_KEY=your-brave-search-api-key \
   cnosuke/mcp-search:latest
