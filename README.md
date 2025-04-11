@@ -23,6 +23,7 @@ docker pull cnosuke/mcp-search:latest
 
 docker run \
   -i \
+  --rm \
   -v /path/to/your/config.yml:/app/config.yml \
   -e BRAVE_SEARCH_API_KEY=your-brave-search-api-key \
   cnosuke/mcp-search:latest
